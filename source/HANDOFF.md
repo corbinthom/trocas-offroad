@@ -87,6 +87,15 @@ on phones first, and embedded in a website with an iframe. Branded with the Troc
 - The computer's back-up-when-stuck rule switched itself on and off and made trucks rock in place. Backing up is now a
   committed 45-frame move that turns toward the track.
 
+## Phone controls
+- The 3D view always fills the whole screen; controls float on a see-through dark glass strip, so dirt shows behind them.
+  On an upright phone the camera picture is shifted up (cam.setViewOffset) so your truck sits above the controls.
+- Upright: joined steering pad (left/right) bottom left, green Gas (pedal icon) and blue Nitro (bolt icon, count badge,
+  dims when empty) bottom right, small Back (reverse icon) above Gas, Trocas logo centered above the buttons.
+- Sideways: glass steering wheel bottom left (drag anywhere on the left side), Nitro, Gas and Back bottom right,
+  Trocas logo at the bottom center. The logo stays on screen the whole race.
+- Tests: tests/phone-upright-controls.py (buttons respond, canvas fills screen), tests/phone-screenshot.py (track + controls).
+
 ## Branding (sized for phones)
 - Start/finish arch with logo banners, plus a big red-framed logo sign on top that faces the camera.
 - Logo across every ramp face, and a big logo painted on the dirt before each ramp (turned to read upright).

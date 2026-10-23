@@ -35,16 +35,27 @@ button{font-family:var(--slab);touch-action:manipulation;cursor:pointer}
 #msg.on{opacity:1}
 
 /* touch controls */
-#pad{position:absolute;z-index:5;pointer-events:none}
-.tb{position:absolute;pointer-events:auto;border-radius:50%;border:3px solid rgba(255,255,255,.75);background:rgba(10,8,6,.5);color:#fff;font:900 13px var(--slab);letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;touch-action:none;box-shadow:0 4px 12px rgba(0,0,0,.5)}
-.tb.on{background:#fff;color:var(--ink)}
-.tb svg{width:46%;height:46%;fill:currentColor}
-#bGas{border-color:#8fe08a;background:rgba(40,120,40,.5)}#bGas.on{background:#8fe08a}
-#bNitro{border-color:#9fd0ff;background:rgba(40,90,170,.5)}#bNitro.on{background:#9fd0ff}
-#bBrake{border-color:#ffb0a0}
+#pad{position:absolute;inset:0;z-index:5;pointer-events:none}
+#padGlass{position:absolute;left:0;right:0;bottom:0;pointer-events:none;background:linear-gradient(to bottom,rgba(15,12,10,0),rgba(15,12,10,.32) 40%,rgba(15,12,10,.62))}
+.tb{position:absolute;pointer-events:auto;touch-action:none;border-radius:50%;padding:0;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  border:2px solid rgba(255,255,255,.55);background:radial-gradient(circle at 35% 26%,rgba(255,255,255,.3),rgba(255,255,255,0) 44%),linear-gradient(160deg,#3c342d,#141110);
+  box-shadow:0 7px 16px rgba(0,0,0,.55),inset 0 -6px 12px rgba(0,0,0,.5),inset 0 2px 2px rgba(255,255,255,.2);
+  font:900 11px var(--slab);letter-spacing:.12em;text-transform:uppercase;text-shadow:0 1px 2px rgba(0,0,0,.6);transition:transform .07s,filter .07s}
+.tb.on{transform:scale(.92);filter:brightness(1.3)}
+.tb svg{width:44%;height:44%;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}
+.tb svg.fill{fill:currentColor;stroke:none}
+#bGas svg,#bNitro svg{width:40%;height:40%}
+#bGas{background:radial-gradient(circle at 35% 26%,rgba(255,255,255,.42),rgba(255,255,255,0) 44%),linear-gradient(160deg,#52d36d,#1b762e);border-color:#d6f7d6}
+#bNitro{background:radial-gradient(circle at 35% 26%,rgba(255,255,255,.42),rgba(255,255,255,0) 44%),linear-gradient(160deg,#5aa9ff,#1a46ad);border-color:#d6e8ff}
+#bNitro.empty{filter:grayscale(.85) brightness(.65)}
+#bNitro b{position:absolute;top:-5px;right:-5px;min-width:24px;height:24px;padding:0 5px;box-sizing:border-box;border-radius:12px;background:#fff;color:#14110e;font:900 13px/24px var(--slab);letter-spacing:0;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+#bBrake{border-color:rgba(255,190,170,.8)}
+.steerPod{position:absolute;display:flex;gap:8px;padding:7px;border-radius:999px;pointer-events:none;background:rgba(15,12,10,.42);border:1px solid rgba(255,255,255,.18);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 8px 18px rgba(0,0,0,.4)}
+.steerPod .tb{position:relative}
+#padLogo{position:absolute;pointer-events:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.85)) drop-shadow(0 0 2px rgba(0,0,0,.6))}
 #wheelZone{position:absolute;left:0;top:0;bottom:0;pointer-events:auto;touch-action:none}
 #wheel{position:absolute;pointer-events:none;color:rgba(255,255,255,.85);display:flex;flex-direction:column;align-items:center;gap:6px}
-#wheel svg{width:100%;height:auto;transition:transform .05s;filter:drop-shadow(0 3px 6px rgba(0,0,0,.6))}
+#wheel svg{width:100%;height:auto;box-sizing:border-box;padding:7%;border-radius:50%;background:radial-gradient(circle at 35% 26%,rgba(255,255,255,.22),rgba(255,255,255,0) 46%),rgba(15,12,10,.45);border:1px solid rgba(255,255,255,.22);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 8px 18px rgba(0,0,0,.45);transition:transform .05s}
 #wheel span{font:700 9px var(--slab);letter-spacing:.12em;text-transform:uppercase;color:var(--mute);white-space:nowrap}
 #wheel.on svg{color:#fff}
 
@@ -106,13 +117,17 @@ h1{margin:0;font:900 clamp(34px,9vw,60px)/.95 var(--slab);text-transform:upperca
 <div id="big"></div>
 <div id="msg"></div>
 <div id="pad" hidden>
+  <div id="padGlass"></div>
   <div id="wheelZone" hidden></div>
   <div id="wheel" hidden><svg viewBox="-50 -50 100 100"><circle r="44" fill="none" stroke="currentColor" stroke-width="9"/><circle r="11" fill="currentColor"/><path d="M-40 4H40M0 8V42" stroke="currentColor" stroke-width="9" fill="none"/></svg><span>Drag to steer</span></div>
-  <button class="tb" id="bLeft" aria-label="Steer left"><svg viewBox="0 0 10 10"><path d="M7 1 2 5l5 4z"/></svg></button>
-  <button class="tb" id="bRight" aria-label="Steer right"><svg viewBox="0 0 10 10"><path d="M3 1l5 4-5 4z"/></svg></button>
-  <button class="tb" id="bGas">Gas</button>
-  <button class="tb" id="bBrake">Back</button>
-  <button class="tb" id="bNitro">Nitro</button>
+  <div class="steerPod" id="steerPod">
+    <button class="tb" id="bLeft" aria-label="Steer left"><svg viewBox="0 0 24 24"><path d="M15 4 7 12l8 8"/></svg></button>
+    <button class="tb" id="bRight" aria-label="Steer right"><svg viewBox="0 0 24 24"><path d="M9 4l8 8-8 8"/></svg></button>
+  </div>
+  <div class="logo" id="padLogo" role="img" aria-label="Trocas Mamalonas"></div>
+  <button class="tb" id="bGas" aria-label="Gas"><svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="15" rx="2.5" transform="rotate(-12 12 10)"/><path d="M8 21h8"/></svg><span>Gas</span></button>
+  <button class="tb" id="bNitro" aria-label="Nitro"><svg viewBox="0 0 24 24" class="fill"><path d="M13.5 2 5 13.5h6L9.5 22 19 9.5h-6.2z"/></svg><span>Nitro</span><b id="nitroCount">3</b></button>
+  <button class="tb" id="bBrake" aria-label="Reverse"><svg viewBox="0 0 24 24"><path d="M9 7 4.5 11.5 9 16"/><path d="M5 11.5h9a5 5 0 0 1 0 10h-2"/></svg></button>
 </div>
 <div id="rot" hidden>Turn your phone sideways to see the whole track</div>
 
@@ -577,7 +592,7 @@ function stepTruck(t){
   const mud=inZone(FEAT.mud,t.x,t.y),water=inZone(FEAT.water,t.x,t.y);
   const fx=Math.cos(t.ang),fy=Math.sin(t.ang);let vf=t.vx*fx+t.vy*fy,vl=-t.vx*fy+t.vy*fx;
   if(t.nitroT>0)t.nitroT--;
-  if(I.nitro&&t.nitros>0&&t.nitroT<=0&&state==='race'){t.nitros--;t.nitroT=NITRO_T;if(t===me){sfxNitro();say('Nitro!');}}
+  if(I.nitro&&t.nitros>0&&t.nitroT<=0&&state==='race'){t.nitros--;t.nitroT=NITRO_T;if(t===me){sfxNitro();say('Nitro!');nitroBadge();}}
   if(grounded){
     const big=t.gold>=5,cap=(t.nitroT>0?NITRO_V:MAXV*(t.human?1:t.skill*t.rub)*(t.gold>=10?1.04:1))*(mud?(big?.8:.62):water?(big?.85:.72):1); // monster wheels handle mud and water better; gold is a little faster
     if(I.gas>0&&vf<cap)vf+=(t.nitroT>0?NITRO_ACC:ACC)*I.gas*(mud?.6:1);
@@ -690,7 +705,7 @@ function driveAI(t){
 function spawnPickup(){if(pickups.length>=3)return;const i=Math.floor(rnd()*T.n),lat=(rnd()-.5)*HW*1.3;
   if(Math.abs(i)<12||Math.abs(i-T.n)<12)return;pickups.push({x:T.x[i]+T.nx[i]*lat,y:T.y[i]+T.ny[i]*lat,kind:rnd()<.55?'nitro':'money',t:0});}
 function checkPickups(){for(let p=pickups.length-1;p>=0;p--){const P=pickups[p];P.t++;for(const t of trucks){if(t.z>10)continue;if((t.x-P.x)**2+(t.y-P.y)**2<16*16){
-  if(P.kind==='nitro'){t.nitros++;if(t===me){say('+1 Nitro');sfxPick();}}else{t.money+=50;if(t===me){say('+$50');sfxPick();}}
+  if(P.kind==='nitro'){t.nitros++;if(t===me){say('+1 Nitro');sfxPick();nitroBadge();}}else{t.money+=50;if(t===me){say('+$50');sfxPick();}}
   pickups.splice(p,1);break;}}}}
 /* ---------- gold Trocas coins: $100 each. 5 = monster wheels, 10 = solid gold truck with fire exhaust ---------- */
 let coins=[],coinTimer=0;const COIN_N=7;
@@ -761,8 +776,10 @@ const mini=document.getElementById('mini'),mc=mini.getContext('2d');let miniBg=n
 function drawMini(){if(!miniBg){miniBg=document.createElement('canvas');miniBg.width=280;miniBg.height=176;const g=miniBg.getContext('2d');g.scale(280/W,176/H);
     g.lineJoin='round';g.beginPath();for(let i=0;i<=T.n;i++){const j=i%T.n;i?g.lineTo(T.x[j],T.y[j]):g.moveTo(T.x[j],T.y[j]);}g.closePath();g.strokeStyle='rgba(245,240,232,.85)';g.lineWidth=HW*1.4;g.stroke();g.strokeStyle='#7a4a26';g.lineWidth=HW*1.1;g.stroke();}
   mc.clearRect(0,0,280,176);mc.drawImage(miniBg,0,0);for(const t of trucks){const x=t.x*280/W,y=t.y*176/H;mc.beginPath();mc.arc(x,y,t===me?9:7,0,TAU);mc.fillStyle=t.pal.top;mc.fill();mc.lineWidth=t===me?3:1.5;mc.strokeStyle=t===me?'#fff':'#000';mc.stroke();}}
+function nitroBadge(){if(!me)return;document.getElementById('nitroCount').textContent=me.nitros;document.getElementById('bNitro').classList.toggle('empty',!me.nitros);}
 function hud(){if(!me)return;document.getElementById('hPos').textContent=ord(placeOf(me));document.getElementById('hLap').textContent=`Lap ${Math.min(laps,me.lap+1)}/${laps}`;
   const pip=document.getElementById('hNit');if(pip.childElementCount!==me.nitros){pip.innerHTML='<i></i>'.repeat(Math.min(9,me.nitros))||'<span style="font:700 10px var(--slab);color:var(--mute)">none</span>';}
+  {const nc=document.getElementById('nitroCount');if(nc.textContent!==String(me.nitros))nc.textContent=me.nitros;document.getElementById('bNitro').classList.toggle('empty',!me.nitros);}
   document.getElementById('hGold').textContent=me.gold<5?`${me.gold}/5`:me.gold<10?`${me.gold}/10`:`${me.gold}`;document.getElementById('hMoney').textContent='$'+me.money;
   document.getElementById('clock').textContent=fmt(raceT);drawMini();}
 /* ---------- messages ---------- */
@@ -772,26 +789,29 @@ const show=(id,on)=>{document.getElementById(id).hidden=!on;};
 /* ---------- layout: fill the screen, follow-cam when the screen is narrow ---------- */
 function layout(){
   const vw=innerWidth,vh=innerHeight,portrait=vh>vw,playing=state!=='menu'&&state!=='done';
-  const padH=isTouch&&portrait?Math.round(Math.min(230,vh*.3)):0,ah=vh-padH;
-  Object.assign(cv.style,{width:vw+'px',height:ah+'px'});if(R3){R3.setSize(vw,ah,false);cam.aspect=vw/ah;cam.updateProjectionMatrix();}
-  const pad=document.getElementById('pad');pad.hidden=!(isTouch&&playing);document.getElementById('rot').hidden=true;
-  sideMode=isTouch&&!portrait;
-  for(const id of ['bLeft','bRight'])document.getElementById(id).hidden=sideMode;
-  document.getElementById('wheel').hidden=document.getElementById('wheelZone').hidden=!sideMode;
-  Object.assign(pad.style,{left:0,right:0,top:portrait?ah+'px':'0',bottom:'0'});
-  if(sideMode){const s=Math.round(clamp(vh*.24,60,104)),g=10;
-    Object.assign(document.getElementById('wheelZone').style,{width:Math.round(vw*.45)+'px'});
-    const ws=Math.round(clamp(vh*.34,90,150));Object.assign(document.getElementById('wheel').style,{width:ws+'px',left:'calc(16px + var(--safeL))',bottom:'calc(14px + var(--safeB))'});
-    const col=(id,size,css)=>Object.assign(document.getElementById(id).style,{width:size+'px',height:size+'px',left:'',top:'',right:'',bottom:''},css);
-    col('bGas',Math.round(s*1.1),{right:'calc(16px + var(--safeR))',bottom:'calc(14px + var(--safeB))'});
-    col('bNitro',s,{right:`calc(${26+Math.round(s*1.1)}px + var(--safeR))`,bottom:'calc(14px + var(--safeB))'});
-    col('bBrake',Math.round(s*.7),{right:'calc(20px + var(--safeR))',bottom:`calc(${28+Math.round(s*1.1)}px + var(--safeB))`});}
-  else if(isTouch){const s=Math.round(clamp(Math.min(vw,vh)*.2,64,104)),g=Math.round(s*.18),sb='calc(12px + var(--safeB))';
-    const place=(id,css)=>Object.assign(document.getElementById(id).style,{width:s+'px',height:s+'px',left:'',right:'',bottom:'',top:''},css);
-    place('bLeft',{left:`calc(${g}px + var(--safeL))`,bottom:sb});place('bRight',{left:`calc(${g*2+s}px + var(--safeL))`,bottom:sb});
-    place('bGas',{right:`calc(${g}px + var(--safeR))`,bottom:sb,width:s*1.15+'px',height:s*1.15+'px'});
-    place('bNitro',{right:`calc(${g*2+s*1.15}px + var(--safeR))`,bottom:sb});
-    place('bBrake',{right:`calc(${g}px + var(--safeR))`,bottom:`calc(${g+s*1.15}px + 12px + var(--safeB))`,width:s*.75+'px',height:s*.75+'px'});}
+  const pad=document.getElementById('pad'),el=id=>document.getElementById(id),css=(id,o)=>Object.assign(el(id).style,o);
+  pad.hidden=!(isTouch&&playing);document.getElementById('rot').hidden=true;sideMode=isTouch&&!portrait;
+  el('steerPod').hidden=sideMode;el('wheel').hidden=el('wheelZone').hidden=!sideMode;
+  let padH=0;
+  if(sideMode){const s=Math.round(clamp(vh*.24,60,104));
+    css('wheelZone',{width:Math.round(vw*.45)+'px'});
+    const ws=Math.round(clamp(vh*.34,90,150));css('wheel',{width:ws+'px',left:'calc(18px + var(--safeL))',bottom:'calc(14px + var(--safeB))'});
+    const g=Math.round(s*1.12);css('bGas',{width:g+'px',height:g+'px',right:'calc(18px + var(--safeR))',bottom:'calc(16px + var(--safeB))',left:'',top:''});
+    css('bNitro',{width:s+'px',height:s+'px',right:`calc(${30+g}px + var(--safeR))`,bottom:'calc(16px + var(--safeB))',left:'',top:''});
+    const bk=Math.round(s*.62);css('bBrake',{width:bk+'px',height:bk+'px',right:`calc(${18+(g-bk)/2}px + var(--safeR))`,bottom:`calc(${30+g}px + var(--safeB))`,left:'',top:''});
+    const lw=Math.round(clamp(vw*.2,120,190));css('padLogo',{width:lw+'px',left:`${(vw-lw)/2}px`,bottom:'calc(10px + var(--safeB))'});
+    css('padGlass',{height:Math.round(vh*.4)+'px'});}
+  else if(isTouch){const s=Math.round(clamp(vw*.19,60,96)),g=Math.round(s*1.22),sb=16;
+    css('steerPod',{left:'calc(12px + var(--safeL))',bottom:`calc(${sb-7}px + var(--safeB))`});for(const id of ['bLeft','bRight'])css(id,{width:s+'px',height:s+'px'});
+    css('bGas',{width:g+'px',height:g+'px',right:'calc(12px + var(--safeR))',bottom:`calc(${sb}px + var(--safeB))`,left:'',top:''});
+    const n=Math.round(s*.92);css('bNitro',{width:n+'px',height:n+'px',right:`calc(${24+g}px + var(--safeR))`,bottom:`calc(${sb+(g-n)/2}px + var(--safeB))`,left:'',top:''});
+    const bk=Math.round(s*.64);css('bBrake',{width:bk+'px',height:bk+'px',right:`calc(${12+(g-bk)/2}px + var(--safeR))`,bottom:`calc(${sb+g+12}px + var(--safeB))`,left:'',top:''});
+    const lw=Math.round(clamp(vw*.46,140,220)),lh=Math.round(lw*328/720),lb=sb+g+14;
+    css('padLogo',{width:lw+'px',left:`${(vw-lw)/2}px`,bottom:`calc(${lb}px + var(--safeB))`});
+    padH=lb+lh+18;css('padGlass',{height:(padH+50)+'px'});}
+  // the 3D view always fills the screen; on an upright phone the picture shifts up so your truck sits above the controls
+  Object.assign(cv.style,{width:vw+'px',height:vh+'px'});
+  if(R3){R3.setSize(vw,vh,false);cam.aspect=vw/vh;if(padH)cam.setViewOffset(vw,vh,0,Math.round(padH*.5),vw,vh);else cam.clearViewOffset();cam.updateProjectionMatrix();}
 }
 addEventListener('resize',layout);addEventListener('orientationchange',()=>setTimeout(layout,200));
 
