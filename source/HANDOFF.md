@@ -87,6 +87,16 @@ on phones first, and embedded in a website with an iframe. Branded with the Troc
 - The computer's back-up-when-stuck rule switched itself on and off and made trucks rock in place. Backing up is now a
   committed 45-frame move that turns toward the track.
 
+## Branding (sized for phones)
+- Start/finish arch with logo banners, plus a big red-framed logo sign on top that faces the camera.
+- Logo across every ramp face, and a big logo painted on the dirt before each ramp (turned to read upright).
+- Two giant infield jumbotrons beside the track, logo banners hanging from the grandstand roofs, billboards outside.
+- Logo decal on every vehicle's hood (trunk on the muscle car): white on dark paint, black on light paint and on gold.
+- Big logo during the 3-2-1 countdown; bigger logo on the start and results screens; "Trocas Champion!" when you win.
+- Gold coins are bigger (radius 10.5).
+- Test note: with the loop paused (window.__hold) a DOM animation can blank the WebGL canvas in screenshots.
+  Use tests/grab-frame.py, which reads the frame straight from the renderer.
+
 ## Website and phones
 - `python3 build.py` makes two outputs: `Trocas-Off-Road.html` (one self-contained file) and `site/` (the website: index.html
   plus manifest.webmanifest, sw.js, icons, share.jpg, README.txt with hosting steps). Zip site/ and upload it anywhere https.

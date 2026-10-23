@@ -52,8 +52,13 @@ button{font-family:var(--slab);touch-action:manipulation;cursor:pointer}
 .ov{position:absolute;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;overflow-y:auto;
   background:radial-gradient(120% 70% at 50% 15%,rgba(120,86,54,.45),rgba(15,12,10,0) 60%),rgba(12,10,8,.88);padding:calc(14px + var(--safeT)) calc(14px + var(--safeR)) calc(14px + var(--safeB)) calc(14px + var(--safeL))}
 .card{width:100%;max-width:560px;margin:auto;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
-.logo{width:min(300px,70vw);aspect-ratio:720/328;background:var(--logo) center/contain no-repeat;filter:drop-shadow(0 4px 10px rgba(0,0,0,.6))}
-.logo.sm{width:min(180px,45vw)}
+.logo{width:min(360px,80vw);aspect-ratio:720/328;background:var(--logo) center/contain no-repeat;filter:drop-shadow(0 4px 10px rgba(0,0,0,.6))}
+.logo.sm{width:min(300px,70vw)}
+#brandBig{position:absolute;left:50%;top:22%;transform:translate(-50%,-50%) scale(1);width:min(520px,72vw);z-index:4;filter:drop-shadow(0 0 14px rgba(0,0,0,.95)) drop-shadow(0 4px 3px rgba(0,0,0,.9));pointer-events:none;transition:opacity .5s,transform .5s;opacity:0}
+#brandBig.on{opacity:1}
+#brandBig.off{opacity:0;transform:translate(-50%,-70%) scale(.8)}
+#champ{font:900 clamp(18px,5vw,26px) var(--slab);letter-spacing:.12em;text-transform:uppercase;color:var(--amber)}
+@media (orientation:landscape) and (max-height:500px){.logo{width:min(240px,40vw)}#brandBig{top:24%;width:min(380px,48vw)}}
 h1{margin:0;font:900 clamp(34px,9vw,60px)/.95 var(--slab);text-transform:uppercase;color:#fff;letter-spacing:-.01em}
 .tag{margin:0;font:400 clamp(10px,2.6vw,13px)/1.5 var(--slab);letter-spacing:.3em;text-transform:uppercase;color:#fff}
 .lbl{font:700 10px var(--slab);letter-spacing:.24em;text-transform:uppercase;color:var(--mute)}
@@ -97,6 +102,7 @@ h1{margin:0;font:900 clamp(34px,9vw,60px)/.95 var(--slab);text-transform:upperca
   <div class="pill" style="margin-top:2px"><span id="clock">0:00.0</span></div>
   <div id="hudR" style="flex-direction:column;align-items:flex-end"><div style="display:flex;gap:6px;align-items:flex-start"><canvas id="mini" width="280" height="176"></canvas><button class="ibtn" id="pauseBtn" aria-label="Pause">II</button></div></div>
 </div>
+<div class="logo" id="brandBig" role="img" aria-label="Trocas Mamalonas"></div>
 <div id="big"></div>
 <div id="msg"></div>
 <div id="pad" hidden>
@@ -133,6 +139,7 @@ h1{margin:0;font:900 clamp(34px,9vw,60px)/.95 var(--slab);text-transform:upperca
     <div class="logo sm" role="img" aria-label="Trocas Mamalonas"></div>
     <div class="lbl">Race results</div>
     <div class="place" id="rPlace">1st!</div>
+    <div id="champ" hidden>Trocas Champion!</div>
     <table class="res" id="rTable"></table>
     <button class="go" id="again">Race again</button>
     <button class="go2" id="toMenu">Change truck</button>
@@ -217,7 +224,7 @@ document.documentElement.style.setProperty('--logo',`url("${LOGO_W}")`);
 const isTouch=matchMedia('(pointer:coarse)').matches;
 let R3=null,scene=null,cam=null,sun=null,groundMat=null,marksTex=null,pts=null,envTex=null,arrow=null,flagman=null;
 const pickupMeshes=new Map(),coinMeshes=new Map();let _coinGeo=null,_coinMats=null;
-function coinGeo(){return _coinGeo||(_coinGeo=new THREE.CylinderGeometry(9,9,1.8,36));}
+function coinGeo(){return _coinGeo||(_coinGeo=new THREE.CylinderGeometry(10.5,10.5,2,36));}
 function coinMats(){if(_coinMats)return _coinMats;const[c,g]=mkCanvas(256,256);
   const gr=g.createRadialGradient(100,90,10,128,128,128);gr.addColorStop(0,'#fff4b8');gr.addColorStop(.55,'#f0c040');gr.addColorStop(1,'#9a6a10');g.fillStyle=gr;g.beginPath();g.arc(128,128,128,0,TAU);g.fill();
   g.lineWidth=12;g.strokeStyle='#b8861c';g.beginPath();g.arc(128,128,116,0,TAU);g.stroke();
@@ -231,6 +238,14 @@ function strokePath(g,off){g.beginPath();for(let i=0;i<=T.n;i++){const j=i%T.n,x
 function tex(c,repeat){const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;if(repeat){t.wrapS=t.wrapT=THREE.RepeatWrapping;}if(R3)t.anisotropy=Math.min(8,R3.capabilities.getMaxAnisotropy());return t;}
 function mkCanvas(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return[c,c.getContext('2d')];}
 const std=(o)=>new THREE.MeshStandardMaterial(o);
+// the Trocas Mamalonas logo as textures (white and black), and a banner painter for signs
+let _logoTex=null;
+function logoTex(black){if(!_logoTex)_logoTex={};const k=black?'b':'w';if(_logoTex[k])return _logoTex[k];const im=black?logoB:logoW;
+  const[c,g]=mkCanvas(512,Math.round(512*im.height/im.width)||233);if(logosReady===2)g.drawImage(im,0,0,c.width,c.height);return _logoTex[k]=tex(c);}
+function bannerTex(w,h,copies,bg='#121010'){const[c,g]=mkCanvas(w,h);g.fillStyle=bg;g.fillRect(0,0,w,h);
+  g.fillStyle='#d42a24';g.fillRect(0,h-h*.09,w,h*.09);g.fillStyle='#f2efe8';for(let x=0;x<w;x+=h*.18)g.fillRect(x,h-h*.09,h*.09,h*.09);g.fillRect(0,0,w,h*.04);
+  if(logosReady===2){const lh=h*.74,lw=lh*logoW.width/logoW.height,gap=(w-copies*lw)/copies;for(let k=0;k<copies;k++)g.drawImage(logoW,gap/2+k*(lw+gap),h*.07,lw,lh);}
+  return tex(c);}
 const shadowy=m=>{m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return m;};
 
 /* ---------- the ground: one big painted picture of the arena floor ---------- */
@@ -247,7 +262,11 @@ function paintGround(){
   for(const z of FEAT.water){const gr=g.createRadialGradient(z.x,z.y,z.r*.6,z.x,z.y,z.r*1.35);gr.addColorStop(0,'#3a2412');gr.addColorStop(1,'rgba(70,40,18,0)');g.fillStyle=gr;g.beginPath();g.ellipse(z.x,z.y,z.r*1.4,z.r*1.15,0,0,TAU);g.fill();}
   {const i=0,sq=6,cols=Math.round((HW*2)/sq);for(let r=0;r<3;r++)for(let k=0;k<cols;k++){const lat=-HW+k*sq+sq/2,al=(r-1)*sq;
     g.save();g.translate(T.x[i]+T.nx[i]*lat+T.tx[i]*al,T.y[i]+T.ny[i]*lat+T.ty[i]*al);g.rotate(Math.atan2(T.ty[i],T.tx[i]));g.fillStyle=(r+k)%2?'#151515':'#efebe2';g.fillRect(-sq/2,-sq/2,sq,sq);g.restore();}}
-  if(logosReady===2){g.globalAlpha=.78;const w=180,h=w*logoB.height/logoB.width;g.drawImage(logoB,620-w/2,433-h/2,w,h);g.globalAlpha=1;}
+  if(logosReady===2){g.globalAlpha=.78;const w=180,h=w*logoB.height/logoB.width;g.drawImage(logoB,620-w/2,433-h/2,w,h);g.globalAlpha=1;
+    // a big logo painted on the dirt before each ramp, turned so it always reads upright for the camera
+    for(const f of FEAT.jumps){const i=wrapI(f-15);let a=Math.atan2(T.ty[i],T.tx[i]);if(Math.cos(a)<0)a+=Math.PI;
+      g.save();g.translate(T.x[i],T.y[i]);g.rotate(a);g.globalAlpha=.6;const lw=76,lh=lw*logoB.height/logoB.width;g.drawImage(logoB,-lw/2,-lh/2,lw,lh);g.restore();}
+    g.globalAlpha=1;}
   g.setTransform(1,0,0,1,0,0);const im=g.getImageData(0,0,2048,1280),d=im.data;
   for(let p=0,y=0;y<1280;y++)for(let x=0;x<2048;x++,p+=4){const n=(hash(x*.7,y*.7)-.5)*22+(hash(x>>3,y>>3)-.5)*10;d[p]=clamp(d[p]+n,0,255);d[p+1]=clamp(d[p+1]+n*.85,0,255);d[p+2]=clamp(d[p+2]+n*.65,0,255);}
   g.putImageData(im,0,0);return c;
@@ -324,6 +343,10 @@ function buildVehicle(model,hex){
     box(32,.4,.6,MAT.chrome,0,y0+2.6,7.6,body);box(32,.4,.6,MAT.chrome,0,y0+2.6,-7.6,body);
   }
   const flame=new THREE.Mesh(new THREE.ConeGeometry(2.2,10,10),MAT.flame);flame.rotation.z=Math.PI/2;flame.position.set(-21,4.5,0);flame.visible=false;root.add(flame);
+  // Trocas logo painted on the hood (on the trunk of the muscle car, where the hood scoop is)
+  {const light=['#f2c018','#b8bec8','#ec6fa8','#f07a1a'].includes(hex),spot={truck:[10.2,5.4+2.2+4.36],jeep:[8.6,5+1.8+5.96],muscle:[-11.6,4.2+.6+4.48],classic:[11,4+.8+4.66]}[model];
+   const dm=std({map:logoTex(light),transparent:true,depthWrite:false,roughness:.5,polygonOffset:true,polygonOffsetFactor:-2});
+   const decal=new THREE.Mesh(new THREE.PlaneGeometry(13.4,13.4/2.2),dm);decal.rotation.set(-Math.PI/2,0,Math.PI/2);decal.position.set(spot[0],spot[1],0);body.add(decal);root.userData.decal=decal;}
   shadowy(root);flame.castShadow=false;
   // twin tailpipes with fire, shown once the truck turns gold
   const bb=new THREE.Box3().setFromObject(body),rear=bb.min.x,fire=new THREE.Group();
@@ -333,7 +356,7 @@ function buildVehicle(model,hex){
     const inner=new THREE.Mesh(new THREE.ConeGeometry(1,5,8),new THREE.MeshBasicMaterial({color:'#fff2a0',transparent:true,opacity:.95,blending:THREE.AdditiveBlending,depthWrite:false}));
     inner.rotation.z=Math.PI/2;inner.position.set(rear-5,bb.min.y+2.6,z);fire.add(inner);}
   fire.visible=false;root.add(fire);
-  return{root,body,wheels,flame,paint,accent,fire,level:0};
+  return{root,body,wheels,flame,paint,accent,fire,level:0,decal:root.userData.decal};
 }
 
 /* ---------- the arena around the track ---------- */
@@ -358,9 +381,10 @@ function buildArena(){
    for(const s of [-1,1]){const geo=ribbon([(HW-2.6)*s,(HW+.6)*s],[.25,.9],null,'dist',14);if(s<0){const ix=geo.index.array;for(let k=0;k<ix.length;k+=3){const a=ix[k];ix[k]=ix[k+1];ix[k+1]=a;}geo.computeVertexNormals();}
      const m=new THREE.Mesh(geo,std({map:t,roughness:.6,side:THREE.DoubleSide}));m.receiveShadow=true;scene.add(m);}}
   // jump ramps: a slope up to a lip, then a short drop
-  {const[c,g]=mkCanvas(128,64);g.fillStyle='#b07644';g.fillRect(0,0,128,64);for(let k=0;k<400;k++){g.fillStyle=hash(k,9)<.5?'rgba(90,50,20,.3)':'rgba(255,220,170,.25)';g.fillRect(hash(k,1)*128,hash(k,2)*64,2,2);}
-   g.strokeStyle='rgba(255,255,255,.85)';g.lineWidth=6;g.lineJoin='round';for(const y of [12,32,52]){g.beginPath();g.moveTo(30,y-8);g.lineTo(52,y);g.lineTo(30,y+8);g.stroke();g.beginPath();g.moveTo(62,y-8);g.lineTo(84,y);g.lineTo(62,y+8);g.stroke();}
-   g.fillStyle='#fff1d6';g.fillRect(120,0,8,64);const rt=tex(c);const rm=std({map:rt,roughness:.9,side:THREE.DoubleSide}),side=std({color:'#8a5228',roughness:1});
+  {const[c,g]=mkCanvas(128,256);g.fillStyle='#b07644';g.fillRect(0,0,128,256);for(let k=0;k<900;k++){g.fillStyle=hash(k,9)<.5?'rgba(90,50,20,.3)':'rgba(255,220,170,.25)';g.fillRect(hash(k,1)*128,hash(k,2)*256,2,2);}
+   // the logo reads across the ramp; a bright lip at the top edge
+   if(logosReady===2){g.save();g.translate(60,128);g.rotate(-Math.PI/2);const lw=226,lh=lw*logoB.height/logoB.width;g.globalAlpha=.92;g.drawImage(logoB,-lw/2,-lh/2,lw,lh);g.restore();}
+   g.fillStyle='#fff1d6';g.fillRect(118,0,10,256);const rt=tex(c);const rm=std({map:rt,roughness:.9,side:THREE.DoubleSide}),side=std({color:'#8a5228',roughness:1});
    for(const f of FEAT.jumps){const L=FACE*6,h=7,w=HW-1,B=9;const geo=new THREE.BufferGeometry();
      const P=[[-L,0,-w],[-L,0,w],[0,h,w],[0,h,-w],[B,0,-w],[B,0,w]];
      const tri=(a,b,c,ua,ub,uc)=>({p:[P[a],P[b],P[c]],u:[ua,ub,uc]});
@@ -381,6 +405,8 @@ function buildArena(){
      const roof=new THREE.Mesh(new THREE.BoxGeometry(len,1.5,40),std({color:'#e8e2d6',roughness:.6}));roof.position.set(len/2,70,-34);grp.add(roof);
      for(let x=0;x<=len;x+=len/6)box(1.6,70,1.6,MAT.dark,x,35,-56,grp);
      const trim=new THREE.Mesh(new THREE.BoxGeometry(len,3,1),std({color:'#d42a24'}));trim.position.set(len/2,68,-13.6);grp.add(trim);
+     const bm=std({map:bannerTex(1024,140,3),roughness:.55});const nb=Math.max(1,Math.floor(len/300));
+     for(let k=0;k<nb;k++){const bn=new THREE.Mesh(new THREE.PlaneGeometry(len/nb-30,(len/nb-30)*140/1024),bm);bn.position.set((k+.5)*len/nb,58,-12.8);grp.add(bn);}
      grp.position.set(x0,0,z0);grp.rotation.y=rot;shadowy(grp);scene.add(grp);};
    mats();stand(880,40,-6,0);stand(480,-6,540,Math.PI/2);}
   // billboards with the Trocas Mamalonas logo, and some with the game name
@@ -409,7 +435,26 @@ function buildArena(){
    for(const [x,y] of inst)for(let k=0;k<3;k++)im.setMatrixAt(n++,mtx.makeTranslation(x,7.5+k*2.7,y));im.castShadow=true;scene.add(im);
    const bm=[std({color:'#d42a24',roughness:.5,metalness:.3}),std({color:'#2a62d8',roughness:.5,metalness:.3})];
    barrels.forEach(([x,y],k)=>{const b=new THREE.Mesh(new THREE.CylinderGeometry(3,3,8,12),bm[k%2]);b.position.set(x,10,y);b.castShadow=true;scene.add(b);});}
-  // the flagman beside the start line
+  // start/finish arch: big TROCAS MAMALONAS banners on both sides, you drive under it every lap
+  {const i=2,span=2*(HW+12),grp=new THREE.Group(),dark=std({color:'#1b1816',metalness:.5,roughness:.45}),ban=std({map:bannerTex(1024,140,3),roughness:.55});
+   for(const sd of [-1,1]){const post=new THREE.Mesh(new THREE.BoxGeometry(4,52,4),dark);post.position.set(sd*span/2,26,0);grp.add(post);}
+   const beam=new THREE.Mesh(new THREE.BoxGeometry(span+8,13,3),[dark,dark,dark,dark,ban,ban]);beam.position.y=46;grp.add(beam);
+   const top=new THREE.Mesh(new THREE.BoxGeometry(span+10,1.6,4.4),std({color:'#d42a24'}));top.position.y=53.3;grp.add(top);
+   grp.position.set(T.x[i],0,T.y[i]);grp.rotation.y=-Math.atan2(T.ny[i],T.nx[i]);shadowy(grp);scene.add(grp);
+   // a big sign on top of the arch that faces the camera, so the logo reads from the stands
+   const sign=new THREE.Group(),face=std({map:bannerTex(640,292,1),roughness:.5}),back=std({map:bannerTex(640,292,1),roughness:.5});
+   const bd=new THREE.Mesh(new THREE.BoxGeometry(84,38,2.4),[dark,dark,dark,dark,face,back]);bd.position.y=75;sign.add(bd);
+   const rim=new THREE.Mesh(new THREE.BoxGeometry(88,42,1.6),std({color:'#d42a24'}));rim.position.y=75;sign.add(rim);
+   const mast=new THREE.Mesh(new THREE.BoxGeometry(3,6,3),dark);mast.position.y=56;sign.add(mast);
+   sign.position.set(T.x[i],0,T.y[i]);shadowy(sign);scene.add(sign);}
+  // two giant jumbotron boards in the infield, right beside the track, facing the camera
+  {const frame=std({color:'#1b1816',metalness:.5,roughness:.45});
+   const jumbo=(x,z,w)=>{const h=w*.44,grp=new THREE.Group(),screen=std({map:bannerTex(768,338,1),roughness:.5,emissive:'#222222'});
+     const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,3),[frame,frame,frame,frame,screen,frame]);b.position.y=16+h/2;grp.add(b);
+     const rim=new THREE.Mesh(new THREE.BoxGeometry(w+4,h+4,2),std({color:'#d42a24'}));rim.position.set(0,16+h/2,-1.4);grp.add(rim);
+     for(const px of [-w*.32,w*.32]){const p=new THREE.Mesh(new THREE.BoxGeometry(3,16,3),frame);p.position.set(px,8,0);grp.add(p);}
+     grp.position.set(x,0,z);shadowy(grp);scene.add(grp);};
+   jumbo(285,450,150);jumbo(204,345,92);}
   {const i=0,x=T.x[i]-T.nx[i]*(HW+24),y=T.y[i]-T.ny[i]*(HW+24);flagman=new THREE.Group();
    box(2.4,6,2,std({color:'#1d2632'}),0,3,0,flagman);box(4,6,2.6,MAT.white,0,9,0,flagman);const head=new THREE.Mesh(new THREE.SphereGeometry(1.7,10,8),std({color:'#e0b08a'}));head.position.y=13.6;flagman.add(head);
    const arm=new THREE.Group();arm.position.set(1.6,11,0);flagman.add(arm);box(1,8,1,std({color:'#ddd'}),0,4,0,arm);
@@ -463,7 +508,7 @@ function snapCam(){camPos=null;}
 function ipos(t,a){if(t.px===undefined)return{x:t.x,y:t.y,h:t.z+t.lift,ang:t.ang};return{x:t.px+(t.x-t.px)*a,y:t.py+(t.y-t.py)*a,h:t.pz+(t.z+t.lift-t.pz)*a,ang:t.pa+angDiff(t.ang,t.pa)*a};}
 function setLevel(V,lv){if(V.level===lv)return;V.level=lv;
   for(const w of V.wheels){const k=lv>=1?1.6:1;w.piv.scale.setScalar(k);w.piv.position.z=w.z0*(lv>=1?1.12:1);}
-  if(lv>=2){for(const m of [V.paint,V.accent]){m.color.set(m===V.paint?'#b8780a':'#704806');m.metalness=.55;m.roughness=.3;m.envMapIntensity=1;m.emissive.set('#2a1600');m.emissiveIntensity=.2;}V.fire.visible=true;}}
+  if(lv>=2){for(const m of [V.paint,V.accent]){m.color.set(m===V.paint?'#b8780a':'#704806');m.metalness=.55;m.roughness=.3;m.envMapIntensity=1;m.emissive.set('#2a1600');m.emissiveIntensity=.2;}V.fire.visible=true;if(V.decal)V.decal.material.map=logoTex(true);V.decal.material.needsUpdate=true;}}
 function render3D(dt,alpha=1){
   if(!R3)return;syncVehicles();const time=performance.now()/1000,ease=k=>1-Math.pow(1-k,dt*60);
   for(const t of trucks){const V=t.mesh,g=V.root,P=ipos(t,alpha);g.position.set(P.x,P.h,P.y);g.rotation.y=-P.ang;
@@ -485,7 +530,7 @@ function render3D(dt,alpha=1){
     shadowy(grp);grp.position.set(P.x,1,P.y);scene.add(grp);pickupMeshes.set(P,grp);}
   for(const [P,grp] of pickupMeshes){if(!pickups.includes(P)){scene.remove(grp);pickupMeshes.delete(P);continue;}grp.rotation.y=time*2;grp.position.y=1+Math.sin(time*3+P.x)*1.2;}
   // gold Trocas coins: standing up, spinning, with the logo on both faces
-  for(const C of coins)if(!coinMeshes.has(C)){const grp=new THREE.Group(),m=new THREE.Mesh(coinGeo(),coinMats());m.rotation.x=Math.PI/2;m.position.y=11;m.castShadow=true;grp.add(m);grp.position.set(C.x,0,C.y);scene.add(grp);coinMeshes.set(C,grp);}
+  for(const C of coins)if(!coinMeshes.has(C)){const grp=new THREE.Group(),m=new THREE.Mesh(coinGeo(),coinMats());m.rotation.x=Math.PI/2;m.position.y=12.5;m.castShadow=true;grp.add(m);grp.position.set(C.x,0,C.y);scene.add(grp);coinMeshes.set(C,grp);}
   for(const [C,grp] of coinMeshes){if(!coins.includes(C)){scene.remove(grp);coinMeshes.delete(C);continue;}grp.rotation.y=time*2.4+C.x;grp.position.y=Math.sin(time*3+C.y)*1.2;}
   // flagman waves at the start, on the final lap (white flag) and at the finish (checkered: shown as black and white)
   if(flagman){const u=flagman.userData,wave=state==='count'||(state==='race'&&raceT<70)||(me&&me.finished)||(me&&me.lap===laps-1&&state==='race');
@@ -661,7 +706,7 @@ function puff(x,y,kind){if(parts.length>PMAX)return;const L=kind==='spark'?14:ki
 function stepParts(){for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.x+=p.vx;p.y+=p.vy;p.vx*=.95;p.vy*=.95;p.h+=p.vh;p.vh-=p.kind==='dust'||p.kind==='fire'?0:.12;if(p.h<0){p.h=0;p.vh=0;}if(--p.life<=0)parts.splice(i,1);}}
 
 /* ---------- race flow ---------- */
-function startRace(){launchMobile();
+function startRace(){launchMobile();document.getElementById('brandBig').classList.remove('off');
   seed=Date.now()%100000+7;mk.clearRect(0,0,marks.width,marks.height);pickups=[];parts=[];coins=[];for(let k=0;k<COIN_N;k++)spawnCoin();
   const others=[0,1,2,3,4,5,6,7].filter(c=>c!==myColor).sort(()=>rnd()-.5).slice(0,3);   // you start at the back row
   trucks=others.map((c,k)=>newTruck(c,k,MODELS[Math.floor(rnd()*MODELS.length)][0]));trucks.push(newTruck(myColor,3,myModel));
@@ -680,7 +725,7 @@ function showResults(){
   const st=standings(),tb=document.getElementById('rTable');tb.innerHTML='';
   st.forEach((t,k)=>{const tr=document.createElement('tr');if(t===me)tr.className='me';
     tr.innerHTML=`<td>${ord(k+1)}</td><td><i style="background:${t.pal.top}"></i>${t===me?'You':t.pal.name} <small style="color:#e8b630">$${t.money}</small></td><td>${t.finished?fmt(t.finT):'still racing'}</td>`;tb.appendChild(tr);});
-  const p=placeOf(me);document.getElementById('rPlace').textContent=p===1?'1st!':ord(p);
+  const p=placeOf(me);document.getElementById('rPlace').textContent=p===1?'1st!':ord(p);document.getElementById('champ').hidden=p!==1;
   show('results',true);
 }
 
@@ -688,13 +733,13 @@ function showResults(){
 let shake=0,sideMode=false,wheelOn=false,wheelSteer=0;
 function step(){
   frameN++;for(const t of trucks){t.px=t.x;t.py=t.y;t.pz=t.z+t.lift;t.pa=t.ang;}
-  if(state==='count'){countT++;const n=3-Math.floor(countT/60);
+  if(state==='count'){countT++;const n=3-Math.floor(countT/60);const bb=document.getElementById('brandBig');bb.classList.toggle('on',countT<180);bb.classList.toggle('off',countT>=180);
     big.textContent=n>0?n:'GO!';if(countT%60===0&&countT<240)sfxCount(countT>=180?1:0);
     for(const t of trucks){t.input.gas=0;}if(countT>=180){state='race';}
     if(countT>=240)big.textContent='';
   }
   if(state==='race'||state==='finish'){
-    raceT++;if(countT<240){countT++;if(countT>=240)big.textContent='';}
+    raceT++;if(countT<240){countT++;if(countT>=240){big.textContent='';document.getElementById('brandBig').classList.remove('on','off');}}
     readInput();for(const t of trucks)if(!t.human){if(t.finished){t.input.gas=.5;driveAI(t);t.input.nitro=false;}else driveAI(t);}
     if(me.finished){me.input.gas=.4;me.input.steer=0;driveAI(me);me.input.nitro=false;}
     for(const t of trucks)stepTruck(t);collideTrucks();for(const t of trucks)wallCheck(t);checkPickups();checkCoins();
